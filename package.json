@@ -1,0 +1,78 @@
+{
+  "name": "gatekeeper-rbac",
+  "version": "1.0.0",
+  "description": "A flexible, granular role-based access control library for TypeScript with NextAuth integration",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.esm.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "build:clean": "rm -rf dist && npm run build",
+    "dev": "rollup -c -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build:clean",
+    "prepack": "npm run build:clean",
+    "pack:test": "npm pack --dry-run",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish"
+  },
+  "keywords": [
+    "rbac",
+    "access-control", 
+    "permissions",
+    "authorization",
+    "nextauth",
+    "iam",
+    "typescript"
+  ],
+  "author": "Gatekeeper Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/gatekeeper-rbac"
+  },
+  "homepage": "https://github.com/your-org/gatekeeper-rbac#readme",
+  "bugs": {
+    "url": "https://github.com/your-org/gatekeeper-rbac/issues"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@types/jest": "^29.5.8",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "rollup": "^4.6.1",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.2"
+  },
+  "dependencies": {
+    "next-auth": "^4.24.5"
+  },
+  "peerDependencies": {
+    "firebase": "^10.0.0",
+    "firebase-admin": "^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "firebase": {
+      "optional": true
+    },
+    "firebase-admin": {
+      "optional": true
+    }
+  }
+}
