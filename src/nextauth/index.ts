@@ -42,7 +42,8 @@ function getReact(): ReactLike {
     try {
       cachedReact = require('react');
     } catch (error) {
-      // React not available, use object structure fallbacks with type, props, and children
+      // React not available, will assign fallback below
+      cachedReact = null;
     }
     // Always ensure fallback is assigned if React is not available
     if (!cachedReact) {

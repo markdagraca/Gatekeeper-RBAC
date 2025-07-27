@@ -40,7 +40,11 @@ const mockConnector = {
 };
 
 describe('NextAuth Utilities', () => {
-  const mockRequest = {} as any;
+  const mockRequest = {
+    method: 'GET',
+    headers: new Headers(),
+    url: 'http://localhost:3000/api/test'
+  } as any;
   const mockContext = { req: {}, res: {}, query: {}, resolvedUrl: '/test' } as any;
 
   beforeEach(() => {
@@ -281,12 +285,11 @@ describe('NextAuth Utilities', () => {
       const handler = jest.fn().mockResolvedValue('success');
       const protectedHandler = withPermissions(mockRbac as any, 'read')(handler);
       
-      const request = {};
       const context = {};
       
       const result = await protectedHandler(mockRequest, context);
       
-      expect(handler).toHaveBeenCalledWith(request, {
+      expect(handler).toHaveBeenCalledWith(mockRequest, {
         ...context,
         session: { user: { id: 'user-123' } }
       });
