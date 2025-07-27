@@ -82,7 +82,7 @@ describe('NextAuth Utilities', () => {
       const request = { 
         url: 'https://example.com/protected',
         headers: new Headers()
-      };
+      } as any; // Type assertion for test mock
 
       const result = await middleware(request);
       
@@ -109,7 +109,7 @@ describe('NextAuth Utilities', () => {
       const request = { 
         url: 'https://example.com/protected',
         headers: new Headers()
-      };
+      } as any; // Type assertion for test mock
 
       const result = await middleware(request);
       
@@ -131,7 +131,7 @@ describe('NextAuth Utilities', () => {
       const request = { 
         url: 'https://example.com/protected',
         headers: new Headers()
-      };
+      } as any; // Type assertion for test mock
 
       const result = await middleware(request);
       

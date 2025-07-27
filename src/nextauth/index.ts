@@ -1,6 +1,7 @@
 import type { JWT } from 'next-auth/jwt';
 import type { Session, User } from 'next-auth';
 import type { AdapterUser } from 'next-auth/adapters';
+import type { NextRequest } from 'next/server';
 import { RBAC } from '../core/rbac';
 import { Permission, NextAuthSession, NextAuthToken } from '../core/types';
 
@@ -316,7 +317,7 @@ export async function syncUserWithGatekeeper(
  * Use this in middleware.ts for app-wide route protection
  */
 export function createNextjsMiddleware(rbac: RBAC) {
-  return async function middleware(request: any) {
+  return async function middleware(request: NextRequest) {
     // Import Next.js middleware utilities
     const { NextResponse } = await import('next/server');
     const { getToken } = await import('next-auth/jwt');
