@@ -43,12 +43,15 @@ function getReact(): ReactLike {
       cachedReact = require('react');
     } catch (error) {
       // React not available, use object structure fallbacks with type, props, and children
+    }
+    // Always ensure fallback is assigned if React is not available
+    if (!cachedReact) {
       cachedReact = {
         createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children })
       };
     }
   }
-  return cachedReact!; // Non-null assertion since we always assign a value above
+  return cachedReact; // Fallback assignment above ensures this is never null
 }
 
 /**
@@ -594,7 +597,7 @@ export function requireAuth<P = {}>(rbac: RBAC, options?: {
         if (typeof window !== 'undefined') {
           const signIn = getSignIn();
           // Use redirectTo option as callbackUrl if provided
-          const callbackUrl = options?.redirectTo || (window.location ? window.location.href : '/');
+          const callbackUrl = options?.redirectTo || window.location?.href || '/';
           signIn(undefined, { callbackUrl });
         }
         return React.createElement('div', null, 'Redirecting to login...');

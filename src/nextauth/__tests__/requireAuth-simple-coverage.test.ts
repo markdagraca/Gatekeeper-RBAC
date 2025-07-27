@@ -40,7 +40,7 @@ describe('requireAuth - Direct Line Coverage', () => {
 
     // Ensure window is undefined for server-side scenario
     const originalWindow = global.window;
-    delete (global as any).window;
+    (global as any).window = undefined;
 
     try {
       const { requireAuth } = require('../index');

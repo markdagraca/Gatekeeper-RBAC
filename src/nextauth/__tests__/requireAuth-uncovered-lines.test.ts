@@ -31,7 +31,7 @@ describe('requireAuth Uncovered Lines', () => {
     jest.clearAllMocks();
     mockCreateElement.mockImplementation((type, props, ...children) => ({ type, props, children }));
     // Clear window mock
-    delete (global as any).window;
+    (global as any).window = undefined;
   });
 
   describe('Browser signIn call (lines 523-524)', () => {

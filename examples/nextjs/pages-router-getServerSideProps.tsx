@@ -9,8 +9,12 @@ import { GetServerSideProps } from 'next';
 import { getServerSidePermissions, createGatekeeper, createFirebaseConnector } from 'gatekeeper-rbac';
 import { getFirestore } from 'firebase/firestore';
 
-// Initialize Gatekeeper
-const db = getFirestore();
+// Note: Firebase should be initialized in your app with initializeApp()
+// import { initializeApp } from 'firebase/app';
+// const app = initializeApp({ /* your config */ });
+
+// Initialize Gatekeeper with Firebase
+const db = getFirestore(); // Uses default Firebase app
 const connector = createFirebaseConnector(db);
 const rbac = createGatekeeper({ connector });
 
