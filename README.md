@@ -134,6 +134,13 @@ Add conditions to permissions for fine-grained control:
 
 ## NextAuth.js Integration
 
+Gatekeeper provides comprehensive Next.js support for all rendering patterns:
+
+- **🛡️ Edge Middleware** - Route protection at the edge
+- **⚡ App Router** - Server Components and API Routes  
+- **📄 Pages Router** - getServerSideProps and API Routes
+- **🎯 Client Components** - React hooks and HOCs
+
 ### Setup
 
 ```typescript
@@ -152,6 +159,19 @@ export default NextAuth({
     })
   }
 });
+```
+
+### Edge Middleware Protection
+
+```typescript
+// middleware.ts
+import { createNextjsMiddleware } from 'gatekeeper-rbac';
+
+export const middleware = createNextjsMiddleware(rbac);
+
+export const config = {
+  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)',],
+};
 ```
 
 ### React Hooks
@@ -193,8 +213,37 @@ export default withPermission(AdminPanel, 'admin.access', {
 });
 ```
 
+### Server Components (App Router)
+
+```typescript
+import { getServerPermissions } from 'gatekeeper-rbac';
+
+export default async function AdminPage() {
+  const permissions = await getServerPermissions(rbac);
+  
+  if (!permissions.hasRole('admin')) {
+    return <div>Access denied</div>;
+  }
+  
+  return <div>Admin content</div>;
+}
+```
+
 ### API Route Protection
 
+#### App Router
+```typescript
+import { withPermissions } from 'gatekeeper-rbac';
+
+export const GET = withPermissions(rbac, 'users.read')(
+  async (request, { session }) => {
+    const users = await getUsers();
+    return Response.json(users);
+  }
+);
+```
+
+#### Pages Router
 ```typescript
 import { withRBAC } from 'gatekeeper-rbac';
 
@@ -205,6 +254,23 @@ export default withRBAC(rbac)(
     res.json(users);
   }
 );
+```
+
+### Server-Side Rendering
+
+```typescript
+// getServerSideProps
+import { getServerSidePermissions } from 'gatekeeper-rbac';
+
+export const getServerSideProps = async (context) => {
+  const result = await getServerSidePermissions(context, rbac);
+  
+  if (!result.isAuthenticated) {
+    return { redirect: { destination: '/login' } };
+  }
+  
+  return { props: { user: result } };
+};
 ```
 
 ## Templates

@@ -8,12 +8,14 @@ module.exports = {
       file: 'dist/index.js',
       format: 'cjs',
       sourcemap: true,
-      exports: 'named'
+      exports: 'named',
+      inlineDynamicImports: true
     },
     {
       file: 'dist/index.esm.js',
       format: 'esm',
-      sourcemap: true
+      sourcemap: true,
+      inlineDynamicImports: true
     }
   ],
   plugins: [
@@ -22,5 +24,5 @@ module.exports = {
       tsconfig: './tsconfig.json'
     })
   ],
-  external: ['next-auth', 'firebase', 'firebase-admin', 'react', 'next/router']
+  external: ['next-auth', 'firebase', 'firebase-admin', 'react', 'next/router', 'next/server', 'next-auth/jwt', 'next-auth/next', 'next/headers']
 };
