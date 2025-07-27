@@ -12,6 +12,13 @@ let cachedUseSession: any = null;
 let cachedSignIn: any = null;
 let cachedReact: ReactLike | null = null;
 
+// Helper function to reset cached values (for testing purposes)
+export function resetHelperCache() {
+  cachedUseSession = null;
+  cachedSignIn = null;
+  cachedReact = null;
+}
+
 // Helper functions to get cached imports
 function getUseSession() {
   if (!cachedUseSession) {
@@ -19,7 +26,7 @@ function getUseSession() {
       const nextAuthReact = require('next-auth/react');
       cachedUseSession = nextAuthReact.useSession;
     } catch (error) {
-      cachedUseSession = () => ({ data: null, status: 'loading' });
+      cachedUseSession = () => ({ data: null, status: 'unauthenticated' });
     }
   }
   return cachedUseSession;
