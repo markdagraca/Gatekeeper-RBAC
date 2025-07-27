@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2024-12-19
+
+### Added
+- **Comprehensive Next.js Support**: Extended beyond basic NextAuth integration to provide utilities for all Next.js rendering patterns including middleware, App Router, Pages Router, and client components
+- **Next.js-Specific Utilities**: Added utilities for edge middleware, server components, API routes, and client-side protection
+- **React Fallback Mechanisms**: Implemented fallback mechanisms to support environments where React may not be available
+- **Comprehensive Examples**: Provided examples demonstrating integration patterns across different Next.js architectures
+
+### Improved
+- **Next.js Integration**: Enhanced support for all Next.js rendering patterns and authentication flows
+- **Architecture Coverage**: Extended library to work seamlessly across middleware, App Router, Pages Router, and client components
+- **Error Handling**: Improved robustness with React fallback mechanisms for environments with missing dependencies
+
 ## [1.0.0] - 2025-01-26
 
 ### Added
