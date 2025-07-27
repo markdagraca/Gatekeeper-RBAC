@@ -300,7 +300,7 @@ describe('NextAuth Utilities', () => {
       const handler = jest.fn();
       const protectedHandler = withPermissions(mockRbac as any, 'read')(handler);
       
-      const result = await protectedHandler({}, {});
+      const result = await protectedHandler(mockRequest, {});
       
       expect(result).toBeInstanceOf(Response);
       expect(handler).not.toHaveBeenCalled();
@@ -318,7 +318,7 @@ describe('NextAuth Utilities', () => {
       const handler = jest.fn();
       const protectedHandler = withPermissions(mockRbac as any, 'write')(handler);
       
-      const result = await protectedHandler({}, {});
+      const result = await protectedHandler(mockRequest, {});
       
       expect(result).toBeInstanceOf(Response);
       expect(handler).not.toHaveBeenCalled();
@@ -338,7 +338,7 @@ describe('NextAuth Utilities', () => {
       const handler = jest.fn().mockResolvedValue('success');
       const protectedHandler = withPermissions(mockRbac as any, ['read', 'write'])(handler);
       
-      const result = await protectedHandler({}, {});
+      const result = await protectedHandler(mockRequest, {});
       
       expect(mockRbac.hasPermission).toHaveBeenCalledTimes(2);
       expect(handler).toHaveBeenCalled();
@@ -352,7 +352,7 @@ describe('NextAuth Utilities', () => {
       const handler = jest.fn();
       const protectedHandler = withPermissions(mockRbac as any, 'read')(handler);
       
-      const result = await protectedHandler({}, {});
+      const result = await protectedHandler(mockRequest, {});
       
       expect(result).toBeInstanceOf(Response);
       expect(handler).not.toHaveBeenCalled();

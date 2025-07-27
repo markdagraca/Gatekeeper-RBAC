@@ -7,6 +7,50 @@ import type { ComponentType } from 'react';
 import { RBAC } from '../core/rbac';
 import { Permission, NextAuthSession, NextAuthToken } from '../core/types';
 
+// Cached React imports for performance
+let cachedUseSession: any = null;
+let cachedSignIn: any = null;
+let cachedReact: ReactLike | null = null;
+
+// Helper functions to get cached imports
+function getUseSession() {
+  if (!cachedUseSession) {
+    try {
+      const nextAuthReact = require('next-auth/react');
+      cachedUseSession = nextAuthReact.useSession;
+    } catch (error) {
+      cachedUseSession = () => ({ data: null, status: 'loading' });
+    }
+  }
+  return cachedUseSession;
+}
+
+function getSignIn() {
+  if (!cachedSignIn) {
+    try {
+      const nextAuthReact = require('next-auth/react');
+      cachedSignIn = nextAuthReact.signIn;
+    } catch (error) {
+      cachedSignIn = () => {};
+    }
+  }
+  return cachedSignIn;
+}
+
+function getReact(): ReactLike {
+  if (!cachedReact) {
+    try {
+      cachedReact = require('react');
+    } catch (error) {
+      // React not available, use object structure fallbacks with type, props, and children
+      cachedReact = {
+        createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children })
+      };
+    }
+  }
+  return cachedReact!; // Non-null assertion since we always assign a value above
+}
+
 /**
  * NextAuth integration for Gatekeeper RBAC
  * Provides callbacks and utilities for seamless integration
@@ -481,7 +525,7 @@ export function withPermissions(
   authOptions?: any
 ) {
   return function routeWrapper(handler: RouteHandlerFunction) {
-    return async function protectedRoute(request: any, context?: any) {
+    return async function protectedRoute(request: NextRequest, context?: Record<string, unknown>) {
       try {
         const { getServerSession } = await import('next-auth/next');
         
@@ -535,8 +579,10 @@ export function requireAuth<P = {}>(rbac: RBAC, options?: {
 }) {
   return function pageWrapper(WrappedComponent: ComponentType<P>) {
     return function ProtectedPage(props: P) {
-      const { data: session, status } = require('next-auth/react').useSession();
+      const useSession = getUseSession();
+      const { data: session, status } = useSession();
       const { hasPermission, hasRole } = useGatekeeperPermissions();
+      const React = getReact();
 
       // Loading state
       if (status === 'loading') {
@@ -546,8 +592,10 @@ export function requireAuth<P = {}>(rbac: RBAC, options?: {
       // Not authenticated
       if (status === 'unauthenticated') {
         if (typeof window !== 'undefined') {
-          const { signIn } = require('next-auth/react');
-          signIn();
+          const signIn = getSignIn();
+          // Use redirectTo option as callbackUrl if provided
+          const callbackUrl = options?.redirectTo || (window.location ? window.location.href : '/');
+          signIn(undefined, { callbackUrl });
         }
         return React.createElement('div', null, 'Redirecting to login...');
       }
@@ -575,13 +623,4 @@ export function requireAuth<P = {}>(rbac: RBAC, options?: {
   };
 }
 
-// React import for createElement (only load when needed)
-let React: ReactLike;
-try {
-  React = require('react');
-} catch (error) {
-  // React not available, will use string fallbacks
-  React = {
-    createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children })
-  };
-}
+// React functionality is now handled through getReact() helper function above
