@@ -40,6 +40,9 @@ const mockConnector = {
 };
 
 describe('NextAuth Utilities', () => {
+  const mockRequest = {} as any;
+  const mockContext = { req: {}, res: {}, query: {}, resolvedUrl: '/test' } as any;
+
   beforeEach(() => {
     jest.clearAllMocks();
     // Set up global mocks
@@ -205,7 +208,12 @@ describe('NextAuth Utilities', () => {
     it('should return permissions for authenticated user', async () => {
       const { getServerSession } = require('next-auth/next');
       
-      const context = { req: {}, res: {} };
+      const context = { 
+        req: {}, 
+        res: {}, 
+        query: {}, 
+        resolvedUrl: '/test' 
+      } as any;
       
       getServerSession.mockResolvedValue({
         user: { id: 'user-123' }
@@ -230,11 +238,9 @@ describe('NextAuth Utilities', () => {
     it('should return redirect for unauthenticated user', async () => {
       const { getServerSession } = require('next-auth/next');
       
-      const context = { req: {}, res: {} };
-      
       getServerSession.mockResolvedValue(null);
 
-      const result = await getServerSidePermissions(context, mockRbac as any);
+      const result = await getServerSidePermissions(mockContext, mockRbac as any);
       
       expect(result.isAuthenticated).toBe(false);
       expect(result.redirect).toEqual({
@@ -246,7 +252,12 @@ describe('NextAuth Utilities', () => {
     it('should handle errors gracefully', async () => {
       const { getServerSession } = require('next-auth/next');
       
-      const context = { req: {}, res: {} };
+      const context = { 
+        req: {}, 
+        res: {}, 
+        query: {}, 
+        resolvedUrl: '/test' 
+      } as any;
       
       getServerSession.mockRejectedValue(new Error('Session error'));
 
@@ -273,7 +284,7 @@ describe('NextAuth Utilities', () => {
       const request = {};
       const context = {};
       
-      const result = await protectedHandler(request, context);
+      const result = await protectedHandler(mockRequest, context);
       
       expect(handler).toHaveBeenCalledWith(request, {
         ...context,

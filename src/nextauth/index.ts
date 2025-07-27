@@ -2,6 +2,8 @@ import type { JWT } from 'next-auth/jwt';
 import type { Session, User } from 'next-auth';
 import type { AdapterUser } from 'next-auth/adapters';
 import type { NextRequest } from 'next/server';
+import type { GetServerSidePropsContext } from 'next';
+import type { ComponentType } from 'react';
 import { RBAC } from '../core/rbac';
 import { Permission, NextAuthSession, NextAuthToken } from '../core/types';
 
@@ -16,6 +18,21 @@ export interface GatekeeperNextAuthConfig {
   includeRolesInSession?: boolean;
   includeGroupsInSession?: boolean;
   sessionCacheTTL?: number; // seconds
+}
+
+// Type definitions for better type safety
+export interface RouteHandlerFunction {
+  (request: Request, context?: { session: NextAuthSession; [key: string]: any }): Response | Promise<Response>;
+}
+
+export interface ReactElement {
+  type: any;
+  props: any;
+  children?: any[];
+}
+
+export interface ReactLike {
+  createElement(type: any, props?: any, ...children: any[]): ReactElement;
 }
 
 /**
@@ -364,12 +381,12 @@ export function createNextjsMiddleware(rbac: RBAC) {
  * Helper for Server Components (App Router)
  * Use this in Server Components to check permissions
  */
-export async function getServerPermissions(rbac: RBAC) {
+export async function getServerPermissions(rbac: RBAC, authOptions?: any) {
   try {
     const { getServerSession } = await import('next-auth/next');
     
     // Try to get session from NextAuth
-    const session = await getServerSession() as NextAuthSession;
+    const session = await getServerSession(authOptions) as NextAuthSession;
     
     if (!session?.user?.id) {
       return {
@@ -412,11 +429,15 @@ export async function getServerPermissions(rbac: RBAC) {
 /**
  * Helper for getServerSideProps (Pages Router)
  */
-export async function getServerSidePermissions(context: any, rbac: RBAC) {
+export async function getServerSidePermissions(
+  context: GetServerSidePropsContext, 
+  rbac: RBAC, 
+  authOptions?: any
+) {
   try {
     const { getServerSession } = await import('next-auth/next');
     
-    const session = await getServerSession(context.req, context.res, {}) as NextAuthSession;
+    const session = await getServerSession(context.req, context.res, authOptions || {}) as NextAuthSession;
     
     if (!session?.user?.id) {
       return {
@@ -454,14 +475,18 @@ export async function getServerSidePermissions(context: any, rbac: RBAC) {
 /**
  * Route handler wrapper for App Router API routes
  */
-export function withPermissions(rbac: RBAC, requiredPermissions: Permission | Permission[]) {
-  return function routeWrapper(handler: Function) {
+export function withPermissions(
+  rbac: RBAC, 
+  requiredPermissions: Permission | Permission[], 
+  authOptions?: any
+) {
+  return function routeWrapper(handler: RouteHandlerFunction) {
     return async function protectedRoute(request: any, context?: any) {
       try {
         const { getServerSession } = await import('next-auth/next');
         
         // Get session for API route
-        const session = await getServerSession() as NextAuthSession;
+        const session = await getServerSession(authOptions) as NextAuthSession;
         
         if (!session?.user?.id) {
           return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -503,13 +528,13 @@ export function withPermissions(rbac: RBAC, requiredPermissions: Permission | Pe
 /**
  * Higher-order function for protecting page components (both App and Pages Router)
  */
-export function requireAuth(rbac: RBAC, options?: {
+export function requireAuth<P = {}>(rbac: RBAC, options?: {
   permissions?: Permission[];
   roles?: string[];
   redirectTo?: string;
 }) {
-  return function pageWrapper(WrappedComponent: any) {
-    return function ProtectedPage(props: any) {
+  return function pageWrapper(WrappedComponent: ComponentType<P>) {
+    return function ProtectedPage(props: P) {
       const { data: session, status } = require('next-auth/react').useSession();
       const { hasPermission, hasRole } = useGatekeeperPermissions();
 
@@ -551,7 +576,7 @@ export function requireAuth(rbac: RBAC, options?: {
 }
 
 // React import for createElement (only load when needed)
-let React: any;
+let React: ReactLike;
 try {
   React = require('react');
 } catch (error) {
