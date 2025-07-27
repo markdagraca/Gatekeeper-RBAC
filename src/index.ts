@@ -60,7 +60,13 @@ export {
   checkServerPermission,
   createPermissionMiddleware,
   withRBAC,
-  syncUserWithGatekeeper
+  syncUserWithGatekeeper,
+  // New Next.js utilities
+  createNextjsMiddleware,
+  getServerPermissions,
+  getServerSidePermissions,
+  withPermissions,
+  requireAuth
 } from './nextauth';
 
 // Templates

@@ -1,8 +1,66 @@
 import type { JWT } from 'next-auth/jwt';
 import type { Session, User } from 'next-auth';
 import type { AdapterUser } from 'next-auth/adapters';
+import type { NextRequest } from 'next/server';
+import type { GetServerSidePropsContext } from 'next';
+import type { ComponentType } from 'react';
 import { RBAC } from '../core/rbac';
 import { Permission, NextAuthSession, NextAuthToken } from '../core/types';
+
+// Cached React imports for performance
+let cachedUseSession: any = null;
+let cachedSignIn: any = null;
+let cachedReact: ReactLike | null = null;
+
+// Helper function to reset cached values (for testing purposes)
+export function resetHelperCache() {
+  cachedUseSession = null;
+  cachedSignIn = null;
+  cachedReact = null;
+}
+
+// Helper functions to get cached imports
+function getUseSession() {
+  if (!cachedUseSession) {
+    try {
+      const nextAuthReact = require('next-auth/react');
+      cachedUseSession = nextAuthReact.useSession;
+    } catch (error) {
+      cachedUseSession = () => ({ data: null, status: 'unauthenticated' });
+    }
+  }
+  return cachedUseSession;
+}
+
+function getSignIn() {
+  if (!cachedSignIn) {
+    try {
+      const nextAuthReact = require('next-auth/react');
+      cachedSignIn = nextAuthReact.signIn;
+    } catch (error) {
+      cachedSignIn = () => {};
+    }
+  }
+  return cachedSignIn;
+}
+
+function getReact(): ReactLike {
+  if (!cachedReact) {
+    try {
+      cachedReact = require('react');
+    } catch (error) {
+      // React not available, will assign fallback below
+      cachedReact = null;
+    }
+    // Always ensure fallback is assigned if React is not available
+    if (!cachedReact) {
+      cachedReact = {
+        createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children })
+      };
+    }
+  }
+  return cachedReact; // Fallback assignment above ensures this is never null
+}
 
 /**
  * NextAuth integration for Gatekeeper RBAC
@@ -15,6 +73,21 @@ export interface GatekeeperNextAuthConfig {
   includeRolesInSession?: boolean;
   includeGroupsInSession?: boolean;
   sessionCacheTTL?: number; // seconds
+}
+
+// Type definitions for better type safety
+export interface RouteHandlerFunction {
+  (request: Request, context?: { session: NextAuthSession; [key: string]: any }): Response | Promise<Response>;
+}
+
+export interface ReactElement {
+  type: any;
+  props: any;
+  children?: any[];
+}
+
+export interface ReactLike {
+  createElement(type: any, props?: any, ...children: any[]): ReactElement;
 }
 
 /**
@@ -310,3 +383,255 @@ export async function syncUserWithGatekeeper(
     console.error('Error syncing user with Gatekeeper:', error);
   }
 }
+
+/**
+ * Next.js middleware helper for protecting routes at the edge
+ * Use this in middleware.ts for app-wide route protection
+ */
+export function createNextjsMiddleware(rbac: RBAC) {
+  return async function middleware(request: NextRequest) {
+    // Import Next.js middleware utilities
+    const { NextResponse } = await import('next/server');
+    const { getToken } = await import('next-auth/jwt');
+
+    try {
+      // Get the JWT token from the request
+      const token = await getToken({ 
+        req: request, 
+        secret: process.env.NEXTAUTH_SECRET 
+      }) as NextAuthToken;
+
+      if (!token?.sub) {
+        // Redirect to login if not authenticated
+        const loginUrl = new URL('/api/auth/signin', request.url);
+        loginUrl.searchParams.set('callbackUrl', request.url);
+        return NextResponse.redirect(loginUrl);
+      }
+
+      // Add user info to headers for downstream components
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set('x-user-id', token.sub);
+      requestHeaders.set('x-user-email', token.email || '');
+      
+      if (token.permissions) {
+        requestHeaders.set('x-user-permissions', JSON.stringify(token.permissions));
+      }
+      if (token.roles) {
+        requestHeaders.set('x-user-roles', JSON.stringify(token.roles));
+      }
+
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
+    } catch (error) {
+      console.error('Middleware error:', error);
+      return NextResponse.redirect(new URL('/api/auth/signin', request.url));
+    }
+  };
+}
+
+/**
+ * Helper for Server Components (App Router)
+ * Use this in Server Components to check permissions
+ */
+export async function getServerPermissions(rbac: RBAC, authOptions?: any) {
+  try {
+    const { getServerSession } = await import('next-auth/next');
+    
+    // Try to get session from NextAuth
+    const session = await getServerSession(authOptions) as NextAuthSession;
+    
+    if (!session?.user?.id) {
+      return {
+        isAuthenticated: false,
+        userId: null,
+        hasPermission: () => false,
+        hasRole: () => false,
+        permissions: [],
+        roles: []
+      };
+    }
+
+    // Get user permissions
+    const permissions = await rbac.getUserEffectivePermissions(session.user.id);
+    const roles = await rbac.getUserRoles(session.user.id);
+
+    return {
+      isAuthenticated: true,
+      userId: session.user.id,
+      hasPermission: (permission: Permission) => 
+        permissions.some(p => p.permission === permission),
+      hasRole: (roleName: string) => 
+        roles.some(r => r.name === roleName || r.id === roleName),
+      permissions: permissions.map(p => p.permission),
+      roles: roles.map(r => r.name)
+    };
+  } catch (error) {
+    console.error('Error getting server permissions:', error);
+    return {
+      isAuthenticated: false,
+      userId: null,
+      hasPermission: () => false,
+      hasRole: () => false,
+      permissions: [],
+      roles: []
+    };
+  }
+}
+
+/**
+ * Helper for getServerSideProps (Pages Router)
+ */
+export async function getServerSidePermissions(
+  context: GetServerSidePropsContext, 
+  rbac: RBAC, 
+  authOptions?: any
+) {
+  try {
+    const { getServerSession } = await import('next-auth/next');
+    
+    const session = await getServerSession(context.req, context.res, authOptions || {}) as NextAuthSession;
+    
+    if (!session?.user?.id) {
+      return {
+        isAuthenticated: false,
+        userId: null,
+        permissions: [],
+        roles: [],
+        redirect: {
+          destination: '/api/auth/signin',
+          permanent: false,
+        }
+      };
+    }
+
+    const permissions = await rbac.getUserEffectivePermissions(session.user.id);
+    const roles = await rbac.getUserRoles(session.user.id);
+
+    return {
+      isAuthenticated: true,
+      userId: session.user.id,
+      permissions: permissions.map(p => p.permission),
+      roles: roles.map(r => ({ id: r.id, name: r.name }))
+    };
+  } catch (error) {
+    console.error('Error in getServerSideProps:', error);
+    return {
+      isAuthenticated: false,
+      userId: null,
+      permissions: [],
+      roles: []
+    };
+  }
+}
+
+/**
+ * Route handler wrapper for App Router API routes
+ */
+export function withPermissions(
+  rbac: RBAC, 
+  requiredPermissions: Permission | Permission[], 
+  authOptions?: any
+) {
+  return function routeWrapper(handler: RouteHandlerFunction) {
+    return async function protectedRoute(request: NextRequest, context?: Record<string, unknown>) {
+      try {
+        const { getServerSession } = await import('next-auth/next');
+        
+        // Get session for API route
+        const session = await getServerSession(authOptions) as NextAuthSession;
+        
+        if (!session?.user?.id) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Check permissions
+        const permissions = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
+        
+        for (const permission of permissions) {
+          const hasPermission = await checkServerPermission(rbac, session.user.id, permission);
+          
+          if (!hasPermission) {
+            return new Response(JSON.stringify({ 
+              error: 'Forbidden',
+              requiredPermission: permission 
+            }), {
+              status: 403,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+        }
+
+        // Call the original handler with authenticated session
+        return handler(request, { ...context, session });
+      } catch (error) {
+        console.error('Route handler error:', error);
+        return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    };
+  };
+}
+
+/**
+ * Higher-order function for protecting page components (both App and Pages Router)
+ */
+export function requireAuth<P = {}>(rbac: RBAC, options?: {
+  permissions?: Permission[];
+  roles?: string[];
+  redirectTo?: string;
+}) {
+  return function pageWrapper(WrappedComponent: ComponentType<P>) {
+    return function ProtectedPage(props: P) {
+      const useSession = getUseSession();
+      const { data: session, status } = useSession();
+      const { hasPermission, hasRole } = useGatekeeperPermissions();
+      const React = getReact();
+
+      // Loading state
+      if (status === 'loading') {
+        return React.createElement('div', null, 'Loading...');
+      }
+
+      // Not authenticated
+      if (status === 'unauthenticated') {
+        if (typeof window !== 'undefined') {
+          const signIn = getSignIn();
+          // Use redirectTo option as callbackUrl if provided
+          const callbackUrl = options?.redirectTo || window.location?.href || '/';
+          signIn(undefined, { callbackUrl });
+        }
+        return React.createElement('div', null, 'Redirecting to login...');
+      }
+
+      // Check permissions
+      if (options?.permissions) {
+        const hasRequiredPermissions = options.permissions.every(permission => 
+          hasPermission(permission)
+        );
+        if (!hasRequiredPermissions) {
+          return React.createElement('div', null, 'Access Denied: Insufficient permissions');
+        }
+      }
+
+      // Check roles
+      if (options?.roles) {
+        const hasRequiredRoles = options.roles.some(role => hasRole(role));
+        if (!hasRequiredRoles) {
+          return React.createElement('div', null, 'Access Denied: Insufficient role');
+        }
+      }
+
+      return React.createElement(WrappedComponent, props);
+    };
+  };
+}
+
+// React functionality is now handled through getReact() helper function above

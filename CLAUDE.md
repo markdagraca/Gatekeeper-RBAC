@@ -95,6 +95,7 @@ The library emphasizes type safety and comprehensive testing:
 - Unit tests for core permission logic
 - Integration tests for database connectors
 - Example-driven development for real-world scenarios
+- **Always make sure we have 100% line and branch coverage dont use shortcuts or tricks to get test to pass**
 
 ## NextAuth Integration Notes
 
