@@ -15,7 +15,7 @@ describe('requireAuth - Direct Line Coverage', () => {
   it('should cover window undefined check (line 526)', async () => {
     // Mock next-auth/react
     const mockUseSession = jest.fn().mockReturnValue({
-      data: null,
+      data: null, 
       status: 'unauthenticated'
     });
 
