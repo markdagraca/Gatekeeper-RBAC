@@ -35,9 +35,7 @@ async function basicExample() {
   // 2. Initialize Gatekeeper RBAC
   const rbac = createGatekeeper({
     connector,
-    wildcardSupport: true,
-    cacheEnabled: true,
-    cacheTTL: 300 // 5 minutes
+    wildcardSupport: true
   });
 
   // 3. Create a user

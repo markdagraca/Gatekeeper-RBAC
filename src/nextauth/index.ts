@@ -72,7 +72,6 @@ export interface GatekeeperNextAuthConfig {
   includePermissionsInSession?: boolean;
   includeRolesInSession?: boolean;
   includeGroupsInSession?: boolean;
-  sessionCacheTTL?: number; // seconds
 }
 
 // Type definitions for better type safety
@@ -98,12 +97,8 @@ export function createGatekeeperCallbacks(config: GatekeeperNextAuthConfig) {
     rbac,
     includePermissionsInSession = true,
     includeRolesInSession = true,
-    includeGroupsInSession = true,
-    sessionCacheTTL = 300
+    includeGroupsInSession = true
   } = config;
-
-  // Cache TTL for future use
-  const _cacheTTL = sessionCacheTTL;
 
   return {
     async jwt({ token, user, account: _account, profile: _profile, isNewUser: _isNewUser }: any): Promise<JWT> {

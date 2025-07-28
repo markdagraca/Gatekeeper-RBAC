@@ -133,7 +133,7 @@ export interface RBACConfig {
   connector: DatabaseConnector;
   permissionSeparator?: string; // Default: '.'
   wildcardSupport?: boolean; // Default: true
-  cacheEnabled?: boolean; // Default: true
+  cacheEnabled?: boolean; // Default: false
   cacheTTL?: number; // Default: 300 seconds
   strictMode?: boolean; // Default: false (allows undefined permissions)
 }

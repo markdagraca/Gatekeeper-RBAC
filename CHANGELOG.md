@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.3] - 2024-12-19
+
+### Fixed
+- **ESM/CJS Module Compatibility**: Added proper `exports` field in package.json to ensure correct module resolution in both ES modules and CommonJS environments
+- **Import Issues**: Fixed `TypeError: Gatekeeper is not a constructor` by adding `Gatekeeper` as an alias export for the `RBAC` class
+- **Module Resolution**: Both named imports (`import { Gatekeeper }`) and default imports (`import Gatekeeper`) now work correctly without type assertions
+
+### Added
+- **Gatekeeper Class Alias**: Added `Gatekeeper` as an exported alias for `RBAC` class to match user expectations
+- **Dual Package Exports**: Configured proper exports map for seamless ESM/CJS interoperability
+
+### Improved
+- **Developer Experience**: Users can now import and use the library as expected: `import { Gatekeeper } from 'gatekeeper-rbac'` followed by `new Gatekeeper(config)`
+- **Build Configuration**: Enhanced package configuration for better compatibility with modern JavaScript projects and Next.js applications
+
 ## [1.2.2] - 2024-12-19
 
 ### Fixed
