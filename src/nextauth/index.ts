@@ -578,7 +578,7 @@ export function withPermissions(
 /**
  * Higher-order function for protecting page components (both App and Pages Router)
  */
-export function requireAuth<P = {}>(rbac: RBAC, options?: {
+export function requireAuth<P = Record<string, unknown>>(_rbac: RBAC, options?: {
   permissions?: Permission[];
   roles?: string[];
   redirectTo?: string;
