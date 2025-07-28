@@ -43,8 +43,7 @@ const connector = createFirebaseConnector(db);
 // Create RBAC instance
 const rbac = createGatekeeper({
   connector,
-  wildcardSupport: true,
-  cacheEnabled: true
+  wildcardSupport: true
 });
 
 // Create a user
@@ -368,8 +367,8 @@ const rbac = createGatekeeper({
   connector,
   permissionSeparator: '.', // Default: '.'
   wildcardSupport: true,    // Default: true
-  cacheEnabled: true,       // Default: true
-  cacheTTL: 300,           // Default: 300 seconds
+  cacheEnabled: false,      // Default: false (disabled for immediate updates)
+  cacheTTL: 300,           // Default: 300 seconds (only applies if cacheEnabled: true)
   strictMode: false        // Default: false
 });
 ```

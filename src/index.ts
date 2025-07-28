@@ -15,6 +15,9 @@
 export { RBAC } from './core/rbac';
 export { PermissionEngine } from './core/permission-engine';
 
+// Alias for better DX - users expect "Gatekeeper" class
+export { RBAC as Gatekeeper } from './core/rbac';
+
 // Import for factory function and default export
 import { RBAC } from './core/rbac';
 import { PermissionEngine } from './core/permission-engine';
@@ -105,14 +108,14 @@ export function createGatekeeper(config: RBACConfig): RBAC {
 /**
  * Version information
  */
-export const version = '1.0.0';
+export const version = '1.2.3';
 
 /**
  * Library information
  */
 export const info = {
   name: 'gatekeeper-rbac',
-  version: '1.0.0',
+  version: '1.2.3',
   description: 'A flexible, granular role-based access control library for TypeScript with NextAuth integration',
   author: 'Gatekeeper Contributors',
   license: 'MIT'
@@ -121,6 +124,7 @@ export const info = {
 // Default export for convenience
 export default {
   RBAC,
+  Gatekeeper: RBAC, // Alias for better DX
   PermissionEngine,
   FirebaseConnector,
   createGatekeeper,

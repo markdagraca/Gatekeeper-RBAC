@@ -23,8 +23,6 @@ async function advancedExample() {
   const rbac = createGatekeeper({
     connector,
     wildcardSupport: true,
-    cacheEnabled: true,
-    cacheTTL: 600, // 10 minutes cache
     strictMode: false
   });
 
@@ -389,19 +387,12 @@ async function performanceOptimization(rbac: any) {
     'reports.read'
   ];
 
-  // First run - cold cache
-  const coldStart = Date.now();
+  // Performance test - sequential checks
+  const sequentialStart = Date.now();
   for (const permission of permissions) {
     await rbac.hasPermission('perf-test-user', permission);
   }
-  const coldTime = Date.now() - coldStart;
-
-  // Second run - warm cache
-  const warmStart = Date.now();
-  for (const permission of permissions) {
-    await rbac.hasPermission('perf-test-user', permission);
-  }
-  const warmTime = Date.now() - warmStart;
+  const sequentialTime = Date.now() - sequentialStart;
 
   // Batch permission check
   const batchStart = Date.now();
@@ -409,8 +400,7 @@ async function performanceOptimization(rbac: any) {
   const batchTime = Date.now() - batchStart;
 
   console.log('Performance metrics:', {
-    coldCacheTime: coldTime + 'ms',
-    warmCacheTime: warmTime + 'ms',
+    sequentialCheckTime: sequentialTime + 'ms',
     batchCheckTime: batchTime + 'ms',
     totalSetupTime: (Date.now() - startTime) + 'ms'
   });

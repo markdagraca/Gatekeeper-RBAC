@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2024-12-19
+
+### Changed
+- **🔥 BREAKING: Caching Disabled by Default**: Permission caching is now disabled by default (`cacheEnabled: false`) to ensure immediate reflection of role and permission changes
+- **Immediate Updates**: Role and permission changes now take effect immediately without waiting for cache expiration
+- **Fresh Data Priority**: All permission checks now fetch fresh data from the database by default
+
+### Removed
+- **sessionCacheTTL Parameter**: Removed `sessionCacheTTL` from `GatekeeperNextAuthConfig` interface as session-level caching is no longer used
+- **Default Cache Configuration**: Removed automatic cache enabling in examples and documentation
+
+### Added
+- **Optional Caching**: Caching can still be enabled by explicitly setting `cacheEnabled: true` in RBAC configuration for performance-critical applications
+- **Real-time Permissions**: Permission changes are now reflected immediately in NextAuth sessions and permission checks
+
+### Migration Guide
+- **No Breaking Changes for Most Users**: If you weren't explicitly relying on caching behavior, no code changes needed
+- **Performance Optimization**: For high-traffic applications, consider enabling caching manually: `createGatekeeper({ connector, cacheEnabled: true })`
+- **NextAuth Configuration**: Remove any `sessionCacheTTL` parameters from `createGatekeeperCallbacks()` calls
+
+## [1.2.3] - 2024-12-19
+
+### Fixed
+- **ESM/CJS Module Compatibility**: Added proper `exports` field in package.json to ensure correct module resolution in both ES modules and CommonJS environments
+- **Import Issues**: Fixed `TypeError: Gatekeeper is not a constructor` by adding `Gatekeeper` as an alias export for the `RBAC` class
+- **Module Resolution**: Both named imports (`import { Gatekeeper }`) and default imports (`import Gatekeeper`) now work correctly without type assertions
+
+### Added
+- **Gatekeeper Class Alias**: Added `Gatekeeper` as an exported alias for `RBAC` class to match user expectations
+- **Dual Package Exports**: Configured proper exports map for seamless ESM/CJS interoperability
+
+### Improved
+- **Developer Experience**: Users can now import and use the library as expected: `import { Gatekeeper } from 'gatekeeper-rbac'` followed by `new Gatekeeper(config)`
+- **Build Configuration**: Enhanced package configuration for better compatibility with modern JavaScript projects and Next.js applications
+
 ## [1.2.2] - 2024-12-19
 
 ### Fixed

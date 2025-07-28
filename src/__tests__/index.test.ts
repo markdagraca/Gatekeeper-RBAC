@@ -101,10 +101,10 @@ describe('Index Exports', () => {
   });
 
   it('should export version and info', () => {
-    expect(version).toBe('1.0.0');
+    expect(version).toBe('1.2.3');
     expect(info).toEqual({
       name: 'gatekeeper-rbac',
-      version: '1.0.0',
+      version: '1.2.3',
       description: 'A flexible, granular role-based access control library for TypeScript with NextAuth integration',
       author: 'Gatekeeper Contributors',
       license: 'MIT'
@@ -246,10 +246,10 @@ describe('Index Exports', () => {
     });
 
     it('should have consistent version across exports', () => {
-      expect(version).toBe('1.0.0');
-      expect(info.version).toBe('1.0.0');
-      expect(defaultExport.version).toBe('1.0.0');
-      expect(defaultExport.info.version).toBe('1.0.0');
+      expect(version).toBe('1.2.3');
+      expect(info.version).toBe('1.2.3');
+      expect(defaultExport.version).toBe('1.2.3');
+      expect(defaultExport.info.version).toBe('1.2.3');
     });
   });
 });

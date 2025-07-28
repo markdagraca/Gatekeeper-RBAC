@@ -179,7 +179,7 @@ describe('Integration Tests', () => {
     const config: RBACConfig = {
       connector,
       wildcardSupport: true,
-      cacheEnabled: true,
+      cacheEnabled: false, // Disable caching for tests to ensure fresh data
       cacheTTL: 300,
       strictMode: false
     };

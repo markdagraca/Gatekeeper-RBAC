@@ -22,7 +22,7 @@ export class RBAC {
 
   constructor(config: RBACConfig) {
     this.config = {
-      cacheEnabled: true,
+      cacheEnabled: false, // Disabled by default for immediate updates
       cacheTTL: 300, // 5 minutes
       ...config
     };
