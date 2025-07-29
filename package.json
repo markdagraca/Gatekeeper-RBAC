@@ -1,6 +1,6 @@
 {
   "name": "gatekeeper-rbac",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "A flexible, granular role-based access control library for TypeScript with NextAuth integration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -55,11 +55,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/gatekeeper-rbac"
+    "url": "https://github.com/markdagraca/Gatekeeper-RBAC"
   },
-  "homepage": "https://github.com/your-org/gatekeeper-rbac#readme",
+  "homepage": "https://github.com/markdagraca/Gatekeeper-RBAC#readme",
   "bugs": {
-    "url": "https://github.com/your-org/gatekeeper-rbac/issues"
+    "url": "https://github.com/markdagraca/Gatekeeper-RBAC/issues"
   },
   "engines": {
     "node": ">=14.0.0",

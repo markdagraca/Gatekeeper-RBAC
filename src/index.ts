@@ -108,14 +108,14 @@ export function createGatekeeper(config: RBACConfig): RBAC {
 /**
  * Version information
  */
-export const version = '1.2.3';
+export const version = '1.3.1';
 
 /**
  * Library information
  */
 export const info = {
   name: 'gatekeeper-rbac',
-  version: '1.2.3',
+  version: '1.3.1',
   description: 'A flexible, granular role-based access control library for TypeScript with NextAuth integration',
   author: 'Gatekeeper Contributors',
   license: 'MIT'
